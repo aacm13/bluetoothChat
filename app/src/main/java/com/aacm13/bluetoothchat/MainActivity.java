@@ -10,6 +10,7 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -17,6 +18,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
@@ -58,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
 
         findViewByIdes();
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
         if (!bluetoothAdapter.isEnabled()){
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, REQUEST_ENABLE_BLUETOOTH);
@@ -85,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_list_item_1, strings);
                     listView.setAdapter(arrayAdapter);
+                    listView.setVisibility(ListView.VISIBLE);
                 }
             }
         });
@@ -104,14 +106,37 @@ public class MainActivity extends AppCompatActivity {
                 clientClass.start();
 
                 status.setText("Connecting");
+                listView.setVisibility(ListView.GONE);
+
             }
         });
 
         send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String string = String.valueOf(writemsg.getText());
-                sendRecieve.write(string.getBytes());
+
+                if(writemsg.getText().toString().equals("")){
+                    Toast.makeText(MainActivity.this, "Please input some texts", Toast.LENGTH_SHORT).show();
+                }else{
+                    String string = String.valueOf(writemsg.getText());
+                    sendRecieve.write(string.getBytes());
+                    writemsg.setText("");
+                    listView.setVisibility(ListView.GONE);
+                }
+            }
+        });
+
+        msg_box.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listView.setVisibility(ListView.GONE);
+            }
+        });
+
+        writemsg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listView.setVisibility(ListView.GONE);
             }
         });
     }
@@ -121,10 +146,10 @@ public class MainActivity extends AppCompatActivity {
         public boolean handleMessage(Message msg) {
             switch (msg.what){
                 case STATE_LISTENING:
-                    status.setText("Listening");
+                    status.setText("Listening...");
                     break;
                 case STATE_CONNECTING:
-                    status.setText("Connecting");
+                    status.setText("Connecting...");
                     break;
                 case STATE_CONNECTED:
                     status.setText("Connected");
